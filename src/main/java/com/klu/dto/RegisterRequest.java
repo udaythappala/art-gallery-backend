@@ -14,8 +14,12 @@ public class RegisterRequest {
     @NotBlank
     private String password;
 
+    // 🔥 ALLOW ONLY VALID ROLES
     @NotBlank
-    private String role;   // keep as String (frontend friendly)
+    @Pattern(regexp = "ADMIN|ARTIST|VISITOR", message = "Role must be ADMIN, ARTIST or VISITOR")
+    private String role;
+
+    // GETTERS & SETTERS
 
     public String getName() {
         return name;

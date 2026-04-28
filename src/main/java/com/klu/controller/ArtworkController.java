@@ -3,9 +3,13 @@ package com.klu.controller;
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import org.springframework.web.multipart.MultipartFile;
+
 import com.klu.dto.ArtworkDTO;
+import com.klu.dto.ArtworkUploadRequest;
 import com.klu.service.ArtworkService;
 
 @RestController
@@ -16,10 +20,34 @@ public class ArtworkController {
     @Autowired
     private ArtworkService artworkService;
 
-    // ✅ ADD ARTWORK
-    @PostMapping
-    public ArtworkDTO addArtwork(@RequestBody ArtworkDTO dto) {
-        return artworkService.addArtwork(dto);
+    // 🔥 FINAL UPLOAD API (WITH DEBUG + ERROR HANDLING)
+    @PostMapping(value = "/upload", consumes = "multipart/form-data")
+    public ResponseEntity<?> uploadArtwork(
+            @ModelAttribute ArtworkUploadRequest request,
+            @RequestParam("file") MultipartFile file) {
+
+        try {
+            System.out.println("🔥 CONTROLLER HIT");
+            System.out.println("Title: " + request.getTitle());
+            System.out.println("Category: " + request.getCategory());
+            System.out.println("Artist: " + request.getArtist());
+            System.out.println("File: " + file.getOriginalFilename());
+
+            ArtworkDTO result = artworkService.uploadArtwork(
+                    request.getTitle(),
+                    request.getDescription(),
+                    request.getPrice(),
+                    request.getArtist(),
+                    request.getCategory(),
+                    file
+            );
+
+            return ResponseEntity.ok(result);
+
+        } catch (Exception e) {
+            e.printStackTrace();
+            return ResponseEntity.badRequest().body("❌ Upload Failed: " + e.getMessage());
+        }
     }
 
     // ✅ GET ALL

@@ -20,11 +20,15 @@ public class Artwork {
     @Positive(message = "Price must be positive")
     private double price;
 
-    @NotBlank(message = "Image URL is required")
+    @NotBlank(message = "Image is required")
     private String image;
 
     @Column(length = 1000)
     private String description;
+
+    // 🔥 NEW FIELD
+    @NotBlank(message = "Category is required")
+    private String category;
 
     // ✅ GETTERS & SETTERS
 
@@ -70,5 +74,14 @@ public class Artwork {
 
     public void setDescription(String description) {
         this.description = description;
+    }
+
+    // 🔥 CATEGORY GETTER/SETTER
+    public String getCategory() {
+        return category;
+    }
+
+    public void setCategory(String category) {
+        this.category = category;
     }
 }

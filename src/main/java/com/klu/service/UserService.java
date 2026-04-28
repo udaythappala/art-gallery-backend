@@ -1,29 +1,27 @@
 package com.klu.service;
-import com.klu.security.JwtUtil;
-import org.springframework.security.crypto.password.PasswordEncoder;
+
+import java.util.List;
+import java.util.Optional;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import com.klu.dto.RegisterRequest;
+import com.klu.entity.Role;
 import com.klu.entity.User;
 import com.klu.repository.UserRepository;
-import com.klu.entity.Role;
-import java.util.Optional;
 
 @Service
 public class UserService {
-	@Autowired
-	private JwtUtil jwtUtil;
 
-	@Autowired
-	private PasswordEncoder passwordEncoder;
+    @Autowired
+    private PasswordEncoder passwordEncoder;
+
     @Autowired
     private UserRepository userRepository;
 
-  
-
-    // ✅ REGISTER (USING DTO)
+    // ✅ REGISTER (FIXED)
     public User registerUser(RegisterRequest request) {
 
         if (userRepository.existsByEmail(request.getEmail())) {
@@ -34,13 +32,22 @@ public class UserService {
         user.setName(request.getName());
         user.setEmail(request.getEmail());
         user.setPassword(passwordEncoder.encode(request.getPassword()));
-      
 
-        try {
-            user.setRole(Role.valueOf(request.getRole().toUpperCase()));
-        } catch (Exception e) {
-            user.setRole(Role.VISITOR); // default role
+        // 🔥 STRICT ROLE SETTING
+        String roleInput = request.getRole().toUpperCase();
+
+        System.out.println("Incoming Role: " + roleInput);
+
+        if (roleInput.equals("ADMIN")) {
+            user.setRole(Role.ADMIN);
+        } else if (roleInput.equals("ARTIST")) {
+            user.setRole(Role.ARTIST);
+        } else {
+            user.setRole(Role.VISITOR); // default safe
         }
+
+        System.out.println("Saved Role: " + user.getRole());
+
         return userRepository.save(user);
     }
 
@@ -60,5 +67,39 @@ public class UserService {
         }
 
         return user;
+    }
+
+    // ✅ GET ALL USERS
+    public List<User> getAllUsers() {
+        return userRepository.findAll();
+    }
+
+    // ✅ UPDATE USER
+    public User updateUser(Long id, User updatedUser) {
+
+        User user = userRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("User not found"));
+
+        user.setName(updatedUser.getName());
+        user.setEmail(updatedUser.getEmail());
+
+        // 🔥 SAFE ROLE UPDATE
+        try {
+            user.setRole(Role.valueOf(updatedUser.getRole().toString().toUpperCase()));
+        } catch (Exception e) {
+            user.setRole(Role.VISITOR);
+        }
+
+        return userRepository.save(user);
+    }
+
+    // ✅ DELETE USER
+    public void deleteUser(Long id) {
+
+        if (!userRepository.existsById(id)) {
+            throw new RuntimeException("User not found");
+        }
+
+        userRepository.deleteById(id);
     }
 }

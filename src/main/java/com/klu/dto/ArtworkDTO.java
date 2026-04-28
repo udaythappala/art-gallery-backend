@@ -9,16 +9,21 @@ public class ArtworkDTO {
     private String image;
     private String artist; // email
 
+    // 🔥 ADD THIS
+    private String category;
+
     // ✅ Constructors
     public ArtworkDTO() {}
 
-    public ArtworkDTO(Long id, String title, String description, double price, String image, String artist) {
+    public ArtworkDTO(Long id, String title, String description, double price,
+                      String image, String artist, String category) {
         this.id = id;
         this.title = title;
         this.description = description;
         this.price = price;
         this.image = image;
         this.artist = artist;
+        this.category = category; // ✅ added
     }
 
     // ✅ Getters & Setters
@@ -39,4 +44,8 @@ public class ArtworkDTO {
 
     public String getArtist() { return artist; }
     public void setArtist(String artist) { this.artist = artist; }
+
+    // 🔥 CATEGORY GETTER/SETTER
+    public String getCategory() { return category; }
+    public void setCategory(String category) { this.category = category; }
 }

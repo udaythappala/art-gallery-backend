@@ -7,12 +7,14 @@ import jakarta.servlet.http.HttpServletResponse;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
+import org.springframework.security.web.authentication.WebAuthenticationDetailsSource;
 
 import java.io.IOException;
-import java.util.Collections;
+import java.util.List;
 
 @Component
 public class JwtFilter extends OncePerRequestFilter {
@@ -20,11 +22,20 @@ public class JwtFilter extends OncePerRequestFilter {
     @Autowired
     private JwtUtil jwtUtil;
 
+    // 🔥 VERY IMPORTANT FIX (SKIP IMAGES)
+    @Override
+    protected boolean shouldNotFilter(HttpServletRequest request) {
+        String path = request.getServletPath();
+        return path.startsWith("/uploads/");
+    }
+
     @Override
     protected void doFilterInternal(HttpServletRequest request,
                                     HttpServletResponse response,
                                     FilterChain filterChain)
             throws ServletException, IOException {
+
+        System.out.println("JWT FILTER HIT");
 
         String authHeader = request.getHeader("Authorization");
 
@@ -32,16 +43,35 @@ public class JwtFilter extends OncePerRequestFilter {
 
             String token = authHeader.substring(7);
 
-            if (jwtUtil.validateToken(token)) {
+            System.out.println("Token: " + token);
 
-                String email = jwtUtil.extractEmail(token);
+            try {
+                if (jwtUtil.validateToken(token)) {
 
-                // 🔥 THIS IS THE MAIN FIX
-                UsernamePasswordAuthenticationToken authentication =
-                        new UsernamePasswordAuthenticationToken(email, null, Collections.emptyList());
+                    String email = jwtUtil.extractEmail(token);
 
-                SecurityContextHolder.getContext().setAuthentication(authentication);
+                    System.out.println("Valid Token for: " + email);
+
+                    UsernamePasswordAuthenticationToken authentication =
+                            new UsernamePasswordAuthenticationToken(
+                                    email,
+                                    null,
+                                    List.of(new SimpleGrantedAuthority("ROLE_USER"))
+                            );
+
+                    authentication.setDetails(
+                            new WebAuthenticationDetailsSource().buildDetails(request)
+                    );
+
+                    SecurityContextHolder.getContext().setAuthentication(authentication);
+                } else {
+                    System.out.println("❌ Invalid Token");
+                }
+            } catch (Exception e) {
+                System.out.println("❌ JWT ERROR: " + e.getMessage());
             }
+        } else {
+            System.out.println("❌ No Authorization Header");
         }
 
         filterChain.doFilter(request, response);

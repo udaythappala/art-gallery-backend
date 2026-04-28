@@ -26,10 +26,14 @@ public class AuthController {
     // ✅ REGISTER
     @PostMapping("/register")
     public User register(@RequestBody RegisterRequest request) {
+
+        // 🔥 DEBUG
+        System.out.println("Register Role: " + request.getRole());
+
         return userService.registerUser(request);
     }
 
-    // ✅ LOGIN (WITH JWT)
+    // ✅ LOGIN
     @PostMapping("/login")
     public Map<String, Object> login(@RequestBody LoginRequest request) {
 
@@ -38,12 +42,17 @@ public class AuthController {
                 request.getPassword()
         );
 
+        // 🔥 TOKEN (still email-based)
         String token = jwtUtil.generateToken(user.getEmail());
 
         Map<String, Object> response = new HashMap<>();
+
         response.put("token", token);
         response.put("email", user.getEmail());
-        response.put("role", user.getRole());
+        response.put("role", user.getRole()); // 🔥 VERY IMPORTANT
+
+        // 🔥 DEBUG
+        System.out.println("Login Role: " + user.getRole());
 
         return response;
     }
