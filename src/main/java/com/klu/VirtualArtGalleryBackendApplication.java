@@ -3,7 +3,7 @@ package com.klu;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 
-@SpringBootApplication
+@SpringBootApplication(scanBasePackages = "com.klu")
 public class VirtualArtGalleryBackendApplication {
 
 	public static void main(String[] args) {

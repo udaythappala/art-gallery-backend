@@ -24,7 +24,6 @@ public class DashboardController {
     @Autowired
     private ExhibitionRepository exhibitionRepository;
 
-    // ✅ GET DASHBOARD STATS
     @GetMapping
     public Map<String, Long> getStats() {
 
